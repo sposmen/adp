@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 // Called when the user clicks on the browser action.
-chrome.browserAction.onClicked.addListener(function(tab) {
-  // No tabs or host permissions needed!
-  console.log('Turning ' + tab.url + ' red!');
+chrome.browserAction.onClicked.addListener(tab => {
   chrome.tabs.executeScript({
-    file: 'app.js'
+    // file: 'toolbar.js'
+    code: '*** alert("Hello");'
   });
 });
+
