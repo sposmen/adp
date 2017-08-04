@@ -2,7 +2,7 @@ function buildToolbarHtml() {
   return `
     <div class="adp-next">
       <button disabled class="adp-next__fill adp-next__btn">
-        Clone last filled row
+        Fill
       </button>
     </div>
   `;
@@ -20,8 +20,15 @@ function init() {
   whenElementReady('#TcGrid', appContainer, () => {
     const fill = toolbar.querySelector('.adp-next__fill');
     fill.removeAttribute('disabled');
-    fill.addEventListener('click', cloneLastFilledRow);
+    fill.addEventListener('click', cloneAll);
   });
+}
+
+function cloneAll() {
+  const rowsLenght = appContainer.querySelectorAll('#TcGrid .dR').length;
+  for (let i = 0; i < rowsLenght; i++) {
+    cloneLastFilledRow();
+  }
 }
 
 function cloneLastFilledRow() {
