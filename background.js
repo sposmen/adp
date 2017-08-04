@@ -6,7 +6,7 @@
 chrome.browserAction.onClicked.addListener(tab => {
   chrome.tabs.executeScript({
     // file: 'toolbar.js'
-    code: '*** alert("Hello");'
+    code: 'alert("Hello");'
   });
 });
 

@@ -1,9 +1,9 @@
 {
-  "name": "ADP",
+  "name": "ADP Next",
   "content_scripts": [
     {
       "matches": [
-        "https://workforcenow.adp.com/portal/theme"
+        "https://workforcenow.adp.com/*"
       ],
       "css": [
         "toolbar.css"
@@ -13,10 +13,10 @@
       ]
     }
   ],
-  "description": "ADP Helper",
-  "version": "1.0",
+  "description": "Add some useful features to ADP",
+  "version": "0.2.0",
   "permissions": [
-    "activeTab"
+    "storage"
   ],
   "background": {
     "scripts": [
@@ -25,7 +25,7 @@
     "persistent": false
   },
   "browser_action": {
-    "default_title": "Auto fill ADP",
+    "default_title": "ADP Next",
     "default_icon": "icon.png"
   },
   "manifest_version": 2

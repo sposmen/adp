@@ -1,9 +1,59 @@
 function buildToolbarHtml() {
   return `
-    <div class="adp-helper">
-        <button disabled class="adp-helper__fill">Fill</button>
+    <div class="adp-next">
+      <button disabled class="adp-next__fill adp-next__btn">
+        Clone last filled row
+      </button>
     </div>
   `;
+}
+
+function init() {
+
+  const appContainer = document.querySelector('#appContainer');
+  const toolbarHtml = buildToolbarHtml();
+
+  appContainer.insertAdjacentHTML('afterbegin', toolbarHtml);
+
+  const toolbar = appContainer.querySelector('.adp-next');
+
+  whenElementReady('#TcGrid', appContainer, () => {
+    const fill = toolbar.querySelector('.adp-next__fill');
+    fill.removeAttribute('disabled');
+    fill.addEventListener('click', cloneLastFilledRow);
+  });
+}
+
+function cloneLastFilledRow() {
+
+  const rows = appContainer.querySelectorAll('#TcGrid .dR');
+
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const row = rows[i];
+    const payCodeEle = row.querySelector('[id$=PayCodeID]');
+    const payCode = payCodeEle.textContent.trim();
+    if (payCode) {
+      cloneRow(row);
+      break;
+    }
+  }
+}
+
+function cloneRow(row) {
+
+  const menuIcon = row.querySelector('.menuIcon');
+  menuIcon.click();
+
+  const menu = obtainMenu(row);
+
+  const copy = menu.querySelectorAll('tr')[2];
+  copy.click();
+}
+
+function obtainMenu(row) {
+  const menus = Array.from(document.querySelectorAll('.dijitPopup'));
+  const visible = menus.find(it => it.style.display !== 'none');
+  return visible;
 }
 
 function whenElementReady(cssSelector, context, callback, timer = 200) {
@@ -20,41 +70,6 @@ function whenElementReady(cssSelector, context, callback, timer = 200) {
 
   }, timer);
 }
-
-function init() {
-
-  const appContainer = document.querySelector('#appContainer');
-  const toolbarHtml = buildToolbarHtml();
-
-  appContainer.insertAdjacentHTML('afterbegin', toolbarHtml);
-
-  const helper = appContainer.querySelector('.adp-helper');
-
-  const fill = helper.querySelector('.adp-helper__fill');
-
-  whenElementReady('#TcGrid', appContainer, () => {
-    fill.removeAttribute('disabled');
-  });
-
-  fill.addEventListener('click', evt => {
-
-    const fieldsPatterns = /(?:PayCodeID|Value|Lcf3|Lcf4|TotalHours)$/;
-
-    const table = appContainer.querySelector('#TcGrid');
-    const rows = table.querySelectorAll('.dR');
-
-    for (const row of rows) {
-      const fields = row.querySelectorAll('.Editable');
-      for (const field of fields) {
-        if (fieldsPatterns.test(field.id)) {
-          console.log('*** ' + field.id, field.textContent);
-        }
-      }
-    }
-
-  });
-}
-
 
 
 init();
