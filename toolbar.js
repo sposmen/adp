@@ -35,9 +35,17 @@ function cloneLastFilledRow() {
 
   for (let i = rows.length - 1; i >= 0; i--) {
     const row = rows[i];
-    const payCodeEle = row.querySelector('[id$=PayCodeID]');
-    const payCode = payCodeEle.textContent.trim();
-    if (payCode) {
+    const fields = Array.from(row.querySelectorAll('.Editable'));
+    let isFilled;
+    for (const field of fields) {
+      if (!field.id.endsWith('_InDate')
+        && !field.id.endsWith('_Value')
+        && field.textContent.trim()) {
+        isFilled = true;
+        break;
+      }
+    }
+    if (isFilled) {
       cloneRow(row);
       break;
     }
