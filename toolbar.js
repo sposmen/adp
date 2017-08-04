@@ -1,9 +1,7 @@
 function buildToolbarHtml() {
   return `
     <div class="adp-next">
-      <button disabled class="adp-next__fill adp-next__btn">
-        Fill
-      </button>
+      <button disabled class="adp-next__fill adp-next__btn">Fill</button>
     </div>
   `;
 }
