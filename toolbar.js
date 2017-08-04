@@ -35,7 +35,7 @@ function cloneLastFilledRow() {
 
   for (let i = rows.length - 1; i >= 0; i--) {
     const row = rows[i];
-    const isFilled = checkIfRowFilled(row);
+    const isFilled = checkIfRowIsFilled(row);
     if (isFilled) {
       cloneRow(row);
       break;
@@ -43,7 +43,7 @@ function cloneLastFilledRow() {
   }
 }
 
-function checkIfRowFilled(row) {
+function checkIfRowIsFilled(row) {
   const fields = Array.from(row.querySelectorAll('.Editable'));
   for (const field of fields) {
     if (!field.id.endsWith('_InDate')
