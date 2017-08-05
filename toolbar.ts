@@ -2,7 +2,7 @@ function init() {
 
   const toolbarHtml = buildToolbarHtml();
 
-  const appContainer = document.querySelector('#appContainer');
+  const appContainer = document.querySelector('body');
   appContainer.insertAdjacentHTML('afterbegin', toolbarHtml);
 
   const toolbar = appContainer.querySelector('.adp-next');
@@ -10,7 +10,7 @@ function init() {
   const fill = toolbar.querySelector('.adp-next__fill');
   fill.addEventListener('click', cloneAll);
 
-  whenElementReady('#TcGrid', appContainer, () => {
+  whenElementReady('TcGrid', () => {
     fill.removeAttribute('disabled');
   });
 }
@@ -56,17 +56,17 @@ function cloneRow(row: HTMLElement) {
   copy.click();
 }
 
-function whenElementReady(cssSelector: string, context: Element, callback: Function, timer = 200) {
+function whenElementReady(id: string, callback: Function, timer = 200) {
   setTimeout(() => {
 
-    const el = context.querySelector(cssSelector);
+    const el = document.getElementById(id);
 
     if (el) {
       callback(el);
       return;
     }
 
-    whenElementReady(cssSelector, context, callback, timer);
+    whenElementReady(id, callback, timer);
 
   }, timer);
 }
@@ -82,7 +82,7 @@ function obtainRows() {
 function buildToolbarHtml() {
   return `
     <div class="adp-next">
-      <button disabled class="adp-next__fill adp-next__btn">Fill</button>
+      <button class="adp-next__fill adp-next__btn" disabled>Fill</button>
     </div>
   `;
 }
