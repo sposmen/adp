@@ -1,4 +1,4 @@
-export function checkIsWeekend(date: Date) {
+export function checkIsWorkingDate(date: Date) {
   const dayOfWeek = date.getUTCDay();
-  return dayOfWeek === 0 || dayOfWeek === 6;
+  return dayOfWeek !== 0 && dayOfWeek !== 6;
 }

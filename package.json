@@ -1,6 +1,6 @@
 {
   "name": "adp-next",
-  "version": "1.0.0",
+  "version": "0.2.2",
   "description": "ADP Next",
   "main": "dist/background.js",
   "scripts": {

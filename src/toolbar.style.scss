@@ -46,11 +46,6 @@
     @include btn(#0095ff);
   }
 
-  .adp-next__clear {
-    @include btn(#999);
-    margin-left: 4rem;
-  }
-
   label.adp-next__label {
     display: inline-block;
     vertical-align: middle;
