@@ -54,7 +54,18 @@ function removeRowsByPoller(next: Function) {
 }
 
 function copyFirstRowToAll() {
-  const rowsLength = obtainRows().length - 1;
+  const rows = obtainRows();
+  const rowsLength = rows.length - 1;
+  const firstRow = rows[0];
+  const valid = checkIfRowIsFilled(firstRow);
+  if (!valid) {
+    const alert = document.querySelector('#alert') as any;
+    alert.querySelector('.adp-next__close').onclick = () => {
+      alert.close();
+    };
+    alert.showModal();
+    return;
+  }
   for (let i = 0; i < rowsLength; i++) {
     const row = obtainRow(i);
     copyRowToNextDay(row);
@@ -114,6 +125,17 @@ function obtainRows() {
 function obtainRow(idx = 0) {
   const rows = obtainRows();
   return rows[idx];
+}
+
+function checkIfRowIsFilled(row: HTMLElement) {
+  const fields = Array.from(row.querySelectorAll('.Editable'));
+  for (const field of fields) {
+    if (!field.id.endsWith('_InDate')
+      && !field.id.endsWith('_Value')
+      && field.textContent.trim()) {
+      return true;
+    }
+  }
 }
 
 function checkToolbar() {
