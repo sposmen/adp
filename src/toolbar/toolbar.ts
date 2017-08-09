@@ -48,23 +48,24 @@ function newCopyAll() {
 
   for (let idx = 1; idx < n; idx++) {
     const days = ONE_DAY;
-    let pos = idx;
+    const pos = idx;
     // pos = idx;
     console.log('* idx', idx);
     console.log('* pos', pos);
     const row = rows[pos];
     console.log('* row', row);
-    if (!row) {
+    if (!row || !row.PayDate) {
       continue;
     }
+    console.log('* valid row', row);
     const srcRow = dojo.clone(row);
     console.log('* srcRow', srcRow);
-    srcRow.PayDate = TLMJS.IsDate(srcRow.PayDate) ? new Date(srcRow.PayDate.valueOf() + days) : null;
-    srcRow.InDate = TLMJS.IsDate(srcRow.InDate) ? new Date(srcRow.InDate.valueOf() + days) : null;
-    srcRow.OutDate = TLMJS.IsDate(srcRow.OutDate) ? new Date(srcRow.OutDate.valueOf() + days) : null;
+    srcRow.PayDate = TLMJS.IsDate(srcRow.PayDate) ? new Date(srcRow.PayDate.valueOf() + days) : undefined;
+    srcRow.InDate = TLMJS.IsDate(srcRow.InDate) ? new Date(srcRow.InDate.valueOf() + days) : undefined;
+    srcRow.OutDate = TLMJS.IsDate(srcRow.OutDate) ? new Date(srcRow.OutDate.valueOf() + days) : undefined;
     const newRow = TcGridUtil.CopyRow(srcRow, !0, !0);
     newRow.WeekNumber = TcGridUtil.IdentifyWeekNumber(newRow.InDate);
-    let newPos = pos + 1;
+    const newPos = pos + 1;
     console.log('* newPos', newPos);
     // const insertPosition = TcGridUtil.StoreItemLocation(rows, 1) + 1;
     // rows.splice(newPos, 0, newRow);
