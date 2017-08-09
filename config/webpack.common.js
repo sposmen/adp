@@ -1,5 +1,4 @@
 const webpack = require('webpack');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const SassLintPlugin = require('sasslint-webpack-plugin');
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -15,8 +14,7 @@ module.exports = {
   },
 
   entry: {
-    'vendor': './src/vendor.ts',
-    'toolbar': './src/toolbar.ts'
+    'toolbar': './src/toolbar/toolbar.ts'
   },
 
   output: {
@@ -50,7 +48,7 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        use: ExtractTextPlugin.extract({ fallback: 'style-loader', use: ['css-loader?sourceMap', 'sass-loader?sourceMap'] })
+        use: ['style-loader', 'css-loader?sourceMap', 'sass-loader?sourceMap']
       },
       {
         test: /\.(gif|jpe?g|png|svg|tiff|webp)$/,
@@ -81,18 +79,13 @@ module.exports = {
       glob: 'src/**/*.s?(a|c)ss',
     }),
     new CheckerPlugin(),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: ['toolbar', 'vendor']
-    }),
     new CopyWebpackPlugin([
-      { from: 'src/assets', to: 'assets' },
+      { from: 'src/manifest.json' },
       { from: 'src/popup.html' },
       { from: 'src/popup.js' },
-      { from: 'manifest.json' },
-    ]),
-    new ExtractTextPlugin({
-      filename: '[name].css'
-    })
+      { from: 'src/content-script.js' },
+      { from: 'src/assets', to: 'assets' },
+    ])
   ]
 
 };

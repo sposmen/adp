@@ -1,8 +1,8 @@
 {
   "name": "adp-next",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "ADP Next",
-  "main": "dist/background.js",
+  "main": "src/content-script.js",
   "scripts": {
     "build": "rimraf dist && webpack",
     "start": "rimraf dist && webpack -w"
@@ -11,7 +11,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sonemonu/adp.git"
+    "url": "https://github.com/rogerpadilla/adp.git"
   },
   "dependencies": {},
   "devDependencies": {
