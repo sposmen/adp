@@ -8,7 +8,7 @@ declare const TcGridTable: any;
 declare const TLMJS: any;
 declare const dojo: any;
 
-const hd = new Holidays();
+const holidaysHelper = new Holidays();
 
 
 function addToolbar() {
@@ -26,7 +26,7 @@ function addToolbar() {
   const countryCode = localStorage.getItem(countryCodeKey);
   if (countryCode) {
     country.value = countryCode;
-    hd.init(countryCode);
+    holidaysHelper.init(countryCode);
   }
 
   copy.addEventListener('click', () => {
@@ -36,7 +36,7 @@ function addToolbar() {
   country.addEventListener('change', () => {
     const countryCode = country.value;
     if (countryCode) {
-      hd.init(countryCode);
+      holidaysHelper.init(countryCode);
       localStorage.setItem(countryCodeKey, countryCode);
     } else {
       localStorage.removeItem(countryCodeKey);
@@ -56,12 +56,16 @@ function copyAll(detectHolidays: boolean) {
   let srcIdx = 1;
 
   let srcRow = rows[srcIdx];
-  let isWeekday = checkIsWeekday(srcRow.InDate);
+  let isFilled = checkIsFilled(srcRow.InDate);
 
-  while (!isWeekday && srcIdx < n) {
+  while (!isFilled && srcIdx < n) {
     srcRow = rows[srcIdx];
     srcIdx++;
-    isWeekday = checkIsWeekday(srcRow.InDate);
+    isFilled = checkIsFilled(srcRow.InDate);
+  }
+
+  if (!isFilled) {
+    showAlertNoSource();
   }
 
   let plusDays = 1;
@@ -71,7 +75,7 @@ function copyAll(detectHolidays: boolean) {
   while (newIdx < n) {
 
     let nextRow = rows[newIdx];
-    isWeekday = checkIsWeekday(nextRow.InDate);
+    let isWeekday = checkIsWeekday(nextRow.InDate);
 
     while (!isWeekday && newIdx < n) {
       plusDays++;
@@ -80,7 +84,7 @@ function copyAll(detectHolidays: boolean) {
       isWeekday = checkIsWeekday(nextRow.InDate);
     }
 
-    // each new week has two additionals rows for headers, ignore them.
+    // each new week starts with two extra rows for the headers, ignore them.
     const headersCount = nextRow.InDate.getDay() === 1 ? 2 : 0;
 
     plusDays -= headersCount;
@@ -122,11 +126,11 @@ export function checkIsWeekday(date: Date) {
 }
 
 export function checkIsHoliday(date: Date) {
-  return hd.isHoliday(date);
+  return holidaysHelper.isHoliday(date);
 }
 
-function checkIsEmpty() {
-  return false;
+function checkIsFilled(row: any) {
+  return row.InDate && row.PayCodeID;
 }
 
 function showAlertNoSource() {
