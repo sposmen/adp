@@ -11,10 +11,11 @@
     }
   ],
   "web_accessible_resources": [
-    "toolbar.js"
+    "toolbar.js",
+    "toolbar.css"
   ],
   "description": "Add some useful features to ADP",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "permissions": [],
   "browser_action": {
     "default_title": "ADP Next",

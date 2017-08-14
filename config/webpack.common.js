@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const SassLintPlugin = require('sasslint-webpack-plugin');
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const helpers = require('./helpers');
@@ -48,7 +49,10 @@ module.exports = {
       },
       {
         test: /\.scss$/,
-        use: ['style-loader', 'css-loader?sourceMap', 'sass-loader?sourceMap']
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: ['css-loader?sourceMap', 'sass-loader?sourceMap']
+        })
       },
       {
         test: /\.(gif|jpe?g|png|svg|tiff|webp)$/,
@@ -79,6 +83,9 @@ module.exports = {
       glob: 'src/**/*.s?(a|c)ss',
     }),
     new CheckerPlugin(),
+    new ExtractTextPlugin({
+      filename: 'toolbar.css'
+    }),
     new CopyWebpackPlugin([
       { from: 'src/manifest.json' },
       { from: 'src/popup.html' },
