@@ -47,3 +47,20 @@ TcGridUtil.renderNewAndAdjustLayout();
 
 
 
+let TLMJS: any;
+let m;
+let pos;
+
+m = 5;
+r = dojo.clone(TcGridView.ProcessedServerResponse.items[TcGridUtil.StoreItemLocation(TcGridView.ProcessedServerResponse.items, 1)]);
+r.PayDate = TLMJS.IsDate(r.PayDate) ? new Date(r.PayDate.valueOf() + 864e5 * m) : null;
+r.InDate = TLMJS.IsDate(r.InDate) ? new Date(r.InDate.valueOf() + 864e5 * m) : null;
+r.OutDate = TLMJS.IsDate(r.OutDate) ? new Date(r.OutDate.valueOf() + 864e5 * m) : null;
+f = TcGridUtil.CopyRow(r, !0, !0);
+f.WeekNumber = TcGridUtil.IdentifyWeekNumber(f.InDate);
+pos = TcGridUtil.StoreItemLocation(TcGridView.ProcessedServerResponse.items, 1) + 1;
+TcGridView.ProcessedServerResponse.items.splice(pos, 0, f);
+TcGridUtil.ResetStoreArrayPositions();
+TcGridUtil.CreateDTORecordXReferences();
+dojo.destroy(TcGridTable.DataGrid.grid);
+TcGridUtil.renderNewAndAdjustLayout();
