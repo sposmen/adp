@@ -56,16 +56,17 @@ function copyAll(detectHolidays: boolean) {
   let srcIdx = 1;
 
   let srcRow = rows[srcIdx];
-  let isFilled = checkIsFilled(srcRow.InDate);
+  let isFilled = checkIsFilled(srcRow);
 
   while (!isFilled && srcIdx < n) {
     srcRow = rows[srcIdx];
     srcIdx++;
-    isFilled = checkIsFilled(srcRow.InDate);
+    isFilled = checkIsFilled(srcRow);
   }
 
   if (!isFilled) {
     showAlertNoSource();
+    return;
   }
 
   let plusDays = 1;
