@@ -40,6 +40,7 @@ async function addToolbar() {
   document.querySelector('#appContainer').insertAdjacentHTML('afterbegin', toolbarHtml);
 
   const toolbar = document.querySelector('.adp-next');
+  const form = toolbar.querySelector('.adp-next__form');
   const copy = toolbar.querySelector('.adp-next__copy');
   const country = toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
 
@@ -51,7 +52,8 @@ async function addToolbar() {
     holidaysHelper.init(countryCode);
   }
 
-  copy.addEventListener('click', () => {
+  form.addEventListener('submit', evt => {
+    evt.preventDefault();
     copyAll(!!country.value);
   });
 
