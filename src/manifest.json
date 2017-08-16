@@ -3,20 +3,35 @@
   "content_scripts": [
     {
       "matches": [
-        "https://workforcenow.adp.com/*"
+        "*://workforcenow.adp.com/*"
+      ],
+      "css": [
+        "app.css"
       ],
       "js": [
         "content-script.js"
       ]
     }
   ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
   "web_accessible_resources": [
-    "toolbar.js",
-    "toolbar.css"
+    "vendor.js",
+    "app.js"
   ],
+  "externally_connectable": {
+    "matches": [
+      "*://workforcenow.adp.com/*"
+    ]
+  },
   "description": "Add some useful features to ADP",
-  "version": "0.5.3",
-  "permissions": [],
+  "version": "0.6.0",
+  "permissions": [
+    "storage"
+  ],
   "browser_action": {
     "default_title": "ADP Next",
     "default_icon": "assets/img/icon.png",

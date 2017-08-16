@@ -1,17 +1,39 @@
 import * as Holidays from 'date-holidays';
-import { whenElementReady } from './dom.util';
+import { whenElementReady } from '../shared/dom.util';
 import './toolbar.style';
-declare const require: any;
-declare const TcGridUtil: any;
-declare const TcGridView: any;
-declare const TcGridTable: any;
-declare const TLMJS: any;
-declare const dojo: any;
+
 
 const holidaysHelper = new Holidays();
 
+const extensionId = 'pmfanodcfkjkbikblghiieinjgmpmdjk';
 
-function addToolbar() {
+
+function getItem(key: string) {
+  return new Promise<any>((resolve, reject) => {
+    chrome.runtime.sendMessage(extensionId, { command: 'getItem', data: { key: key } }, response => {
+      resolve(response);
+    });
+  });
+}
+
+function setItem(key: string, value: any) {
+  return new Promise<any>((resolve, reject) => {
+    chrome.runtime.sendMessage(extensionId, { command: 'setItem', data: { key: key, value: value } }, response => {
+      resolve(response);
+    });
+  });
+}
+
+function removeItem(key: string) {
+  return new Promise<any>((resolve, reject) => {
+    chrome.runtime.sendMessage(extensionId, { command: 'removeItem', data: { key: key } }, response => {
+      resolve(response);
+    });
+  });
+}
+
+
+async function addToolbar() {
 
   // tslint:disable-next-line:no-require-imports
   const toolbarHtml = require('./toolbar.tpl');
@@ -23,7 +45,7 @@ function addToolbar() {
 
   const countryCodeKey = 'adp-next__countryCode';
 
-  const countryCode = localStorage.getItem(countryCodeKey);
+  const countryCode = await getItem(countryCodeKey);
   if (countryCode) {
     country.value = countryCode;
     holidaysHelper.init(countryCode);
@@ -33,13 +55,13 @@ function addToolbar() {
     copyAll(!!country.value);
   });
 
-  country.addEventListener('change', () => {
+  country.addEventListener('change', async () => {
     const countryCode = country.value;
     if (countryCode) {
       holidaysHelper.init(countryCode);
-      localStorage.setItem(countryCodeKey, countryCode);
+      await setItem(countryCodeKey, countryCode);
     } else {
-      localStorage.removeItem(countryCodeKey);
+      await removeItem(countryCodeKey);
     }
   });
 

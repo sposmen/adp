@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const CommonsChunkPlugin = require('webpack/lib/optimize/CommonsChunkPlugin');
 const SassLintPlugin = require('sasslint-webpack-plugin');
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
@@ -18,7 +19,8 @@ module.exports = function (options) {
     },
 
     entry: {
-      'toolbar': './src/toolbar/toolbar.ts'
+      'vendor': './src/app/vendor.ts',
+      'app': './src/app/app.ts'
     },
 
     output: {
@@ -81,19 +83,17 @@ module.exports = function (options) {
 
     plugins: [
       new webpack.optimize.ModuleConcatenationPlugin(),
+      new CommonsChunkPlugin(['app', 'vendor']),
       new SassLintPlugin({
         configFile: '.sass-lint.yml',
         glob: 'src/**/*.s?(a|c)ss',
       }),
       new CheckerPlugin(),
       new ExtractTextPlugin({
-        filename: 'toolbar.css'
+        filename: 'app.css'
       }),
       new CopyWebpackPlugin([
-        { from: 'src/manifest.json' },
-        { from: 'src/popup.html' },
-        { from: 'src/popup.js' },
-        { from: 'src/content-script.js' },
+        { from: 'src/*.*', flatten: true },
         { from: 'src/assets', to: 'assets' },
       ])
     ]
