@@ -1,36 +1,10 @@
 import * as Holidays from 'date-holidays';
 import { whenElementReady } from '../shared/dom.util';
+import * as store from '../shared/store.util';
 import './toolbar.style';
 
 
 const holidaysHelper = new Holidays();
-
-const extensionId = 'pmfanodcfkjkbikblghiieinjgmpmdjk';
-
-
-function getItem(key: string) {
-  return new Promise<any>((resolve, reject) => {
-    chrome.runtime.sendMessage(extensionId, { command: 'getItem', data: { key: key } }, response => {
-      resolve(response);
-    });
-  });
-}
-
-function setItem(key: string, value: any) {
-  return new Promise<any>((resolve, reject) => {
-    chrome.runtime.sendMessage(extensionId, { command: 'setItem', data: { key: key, value: value } }, response => {
-      resolve(response);
-    });
-  });
-}
-
-function removeItem(key: string) {
-  return new Promise<any>((resolve, reject) => {
-    chrome.runtime.sendMessage(extensionId, { command: 'removeItem', data: { key: key } }, response => {
-      resolve(response);
-    });
-  });
-}
 
 
 async function addToolbar() {
@@ -46,7 +20,7 @@ async function addToolbar() {
 
   const countryCodeKey = 'adp-next__countryCode';
 
-  const countryCode = await getItem(countryCodeKey);
+  const countryCode = await store.getItem(countryCodeKey);
   if (countryCode) {
     country.value = countryCode;
     holidaysHelper.init(countryCode);
@@ -61,9 +35,9 @@ async function addToolbar() {
     const countryCode = country.value;
     if (countryCode) {
       holidaysHelper.init(countryCode);
-      await setItem(countryCodeKey, countryCode);
+      await store.setItem(countryCodeKey, countryCode);
     } else {
-      await removeItem(countryCodeKey);
+      await store.removeItem(countryCodeKey);
     }
   });
 
