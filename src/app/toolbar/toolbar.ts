@@ -108,8 +108,6 @@ function copyAll() {
   
   const { srcIdx, srcRow } = firstFilledResp;
 
-  console.log('* srcRow', srcRow);
-  
   store.setItem('srcRow', JSON.stringify(srcRow));
   
   let plusDays = 1;
