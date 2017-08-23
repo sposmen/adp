@@ -38,12 +38,6 @@ npm install
 npm start
 ```
 
-### Visual Studio Code
-
-Run watch mode.
-
-type `Ctrl + Shift + B`
-
 ## Load extension to chrome
 
 Load `dist` directory
