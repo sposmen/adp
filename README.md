@@ -1,6 +1,6 @@
 # ADP Chrome Extension
 
-Chrome Extension, TypeScript and Visual Studio Code
+Chrome Extension using TypeScript and Webpack
 
 ## Prerequisites
 
