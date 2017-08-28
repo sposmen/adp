@@ -6,10 +6,6 @@ Chrome Extension using TypeScript and Webpack
 
 * [node + npm](https://nodejs.org/) (Current Version)
 
-## Option
-
-* [Visual Studio Code](https://code.visualstudio.com/)
-
 ## Includes the following
 
 * TypeScript
