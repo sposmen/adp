@@ -22,10 +22,6 @@ Chrome Extension using TypeScript and Webpack
 npm install
 ```
 
-## Import as Visual Studio Code project
-
-...
-
 ## Build by watch mode
 
 ### terminal
