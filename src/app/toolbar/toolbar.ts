@@ -1,5 +1,5 @@
 import * as Holidays from 'date-holidays';
-import { whenElementReady } from '../shared/dom.util';
+import {whenElementReady} from '../shared/dom.util';
 import * as store from '../shared/store.util';
 import './toolbar.style';
 
@@ -15,9 +15,8 @@ class Toolbar {
   appContainer: any;
 
   constructor() {
-    // tslint:disable-next-line:no-require-imports
-    this.toolbarHtml = require('./toolbar.tpl');
     this.appContainer = document.querySelector('#appContainer');
+    this.countryCodeKey = 'adp-next__countryCode';
 
     this.checkToolbar();
     window.addEventListener('hashchange', this.checkToolbar);
@@ -75,35 +74,13 @@ class Toolbar {
     return isFilled ? {srcIdx, srcRow} : undefined;
   }
 
-  checkToolbar = () => {
-
-    const path = location.hash;
-    const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
-
-    if (path === myTimecardPath) {
-      if (!this.toolbar) {
-        this.setSelectors();
-        this.addToolbar();
-      }
-    } else if (this.toolbar) {
-      this.toolbar.parentNode.removeChild(this.toolbar);
-      this.toolbar = undefined;
-    }
-  };
-
-  setSelectors() {
-
-    this.appContainer.insertAdjacentHTML('afterbegin', this.toolbarHtml);
-
-    this.toolbar = document.querySelector('.adp-next');
+  // Create the toolbar just once
+  async createToolbar() {
+    // tslint:disable-next-line:no-require-imports
+    const html = require('./toolbar.tpl');
+    this.toolbar = (new DOMParser()).parseFromString(html, "text/html").querySelector('.adp-next');
     this.copy = this.toolbar.querySelector('.adp-next__copy');
     this.country = this.toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
-    this.countryCodeKey = 'adp-next__countryCode';
-
-  }
-
-  async addToolbar() {
-
     const countryCode = await store.getItem(this.countryCodeKey);
     if (countryCode) {
       this.country.value = countryCode;
@@ -113,8 +90,33 @@ class Toolbar {
     this.copy.addEventListener('click', this.copyAll);
 
     this.country.addEventListener('change', this.setCountryCode);
+  }
 
-    whenElementReady('TcGrid', this.enableControls);
+  checkToolbar = () => {
+
+    const path = location.hash;
+    const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
+
+    if (path === myTimecardPath) {
+      if (!this.toolbar) {
+        this.createToolbar();
+      }
+      this.addToolbarToDocument();
+      whenElementReady('TcGrid', this.enableControls);
+    } else if (this.toolbar) {
+      this.removeToolbarFromDocument();
+    }
+  };
+
+  addToolbarToDocument() {
+    this.appContainer.insertAdjacentElement('afterbegin', this.toolbar);
+  }
+
+  removeToolbarFromDocument() {
+    if (this.toolbar.parentNode) {
+      this.toolbar.parentNode.removeChild(this.toolbar);
+      this.enableToolbar(false);
+    }
   }
 
   setCountryCode = async () => {
@@ -173,10 +175,9 @@ class Toolbar {
         nextRow = rows[newIdx];
       }
 
-      // each new week starts with two extra rows for the headers, ignore them.
-      const headersCount = nextRow.InDate.getDay() === 1 ? 2 : 0;
-
-      plusDays -= headersCount;
+      // Each new week starts with two extra rows for the headers, ignore them.
+      // TODO: This increment is generating new rows in non selected range of dates. Could be checked by adding 2 to the newIdx ?
+      plusDays -= nextRow.InDate.getDay() === 1 ? 2 : 0;
 
       const days = ONE_DAY_IN_MILLIS * plusDays;
       const date = new Date(srcRow.InDate.valueOf() + days);
