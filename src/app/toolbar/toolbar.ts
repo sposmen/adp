@@ -3,9 +3,10 @@ import {whenElementReady} from '../shared/dom.util';
 import * as store from '../shared/store.util';
 import './toolbar.style';
 
+const holidaysHelper = new Holidays();
+
 class Toolbar {
 
-  static holidaysHelper = new Holidays();
   toolbar: any;
   copy: any;
   country: any;
@@ -23,51 +24,6 @@ class Toolbar {
     window.addEventListener('hashchange', this.checkToolbar);
   }
 
-  static checkIsWeekday(date: Date) {
-    const dayOfWeek = date.getUTCDay();
-    return dayOfWeek !== 0 && dayOfWeek !== 6;
-  }
-
-  static checkIsWeekdayRow(row: any) {
-    return Toolbar.checkIsWeekday(row.InDate);
-  }
-
-  static checkIsFilledRow(row: any) {
-    return row.TotalHours > 0 && row.Value > 0 && row.PayCodeID && row.Lcf3 && row.Lcf4;
-  }
-
-  static checkIsHoliday(date: Date) {
-    return Toolbar.holidaysHelper.isHoliday(date);
-  }
-
-  static showAlert(message: string) {
-    const alert = document.querySelector('.adp-next__alert') as any;
-
-    alert.querySelector('.adp-next__alert-message').textContent = message;
-
-    alert.querySelector('.adp-next__close').onclick = () => {
-      alert.close();
-    };
-
-    alert.showModal();
-  }
-
-  static findFirstFilled(rows: any[]) {
-
-    let srcRow;
-    let isFilled;
-    let srcIdx = 0;
-    const rowsLimit = rows.length - 1;
-
-    do {
-      srcIdx++;
-      srcRow = rows[srcIdx];
-      isFilled = Toolbar.checkIsFilledRow(srcRow);
-    } while (!isFilled && srcIdx < rowsLimit);
-
-    return isFilled ? {srcIdx, srcRow} : undefined;
-  }
-
   checkToolbar = () => {
 
     const path = location.hash;
@@ -75,7 +31,7 @@ class Toolbar {
 
     if (path === myTimecardPath) {
       if (!this.toolbar) {
-        this.setSelectors();
+        this.domSelectors();
         this.addToolbar();
       }
     } else if (this.toolbar) {
@@ -84,7 +40,7 @@ class Toolbar {
     }
   }
 
-  setSelectors() {
+  domSelectors() {
 
     this.appContainer.insertAdjacentHTML('afterbegin', this.toolbarHtml);
 
@@ -100,21 +56,21 @@ class Toolbar {
     const countryCode = await store.getItem(this.countryCodeKey);
     if (countryCode) {
       this.country.value = countryCode;
-      Toolbar.holidaysHelper.init(countryCode);
+      holidaysHelper.init(countryCode);
     }
 
     this.copy.addEventListener('click', this.copyAll);
 
     this.country.addEventListener('change', this.setCountryCode);
 
-    whenElementReady('TcGrid', this.enableControls);
+    whenElementReady('TcGrid', this.postGrid);
   }
 
   setCountryCode = async () => {
     const countryCode = this.country.value;
     if (countryCode) {
       this.countryCode = countryCode;
-      Toolbar.holidaysHelper.init(countryCode);
+      holidaysHelper.init(countryCode);
       await store.setItem(this.countryCodeKey, countryCode);
     } else {
       await store.removeItem(this.countryCodeKey);
@@ -131,9 +87,14 @@ class Toolbar {
     }
   }
 
-  enableControls = () => {
+  enableControls() {
     this.country.removeAttribute('disabled');
     this.enableToolbar(!!this.country.value);
+  }
+
+  postGrid = () => {
+    this.enableControls();
+    // TODO: Create a new method to assign the holiday class .isHoliday to view
   }
 
   copyAll = () => {
@@ -142,10 +103,10 @@ class Toolbar {
 
     const rows = TcGridTable.DataGrid.store.data;
 
-    const firstFilledResp = Toolbar.findFirstFilled(rows);
+    const firstFilledResp = findFirstFilled(rows);
 
     if (!firstFilledResp) {
-      return Toolbar.showAlert('Fill a source row before copy.');
+      return showAlert('Fill a source row before copy.');
     }
 
     const {srcIdx, srcRow} = firstFilledResp;
@@ -155,40 +116,71 @@ class Toolbar {
     // Set status as changed
     dataToClone.ProcessDTOStatus = 1;
 
-    store.setItem('dataToClone', JSON.stringify(dataToClone));
+    // TODO: To Implement the always persistant clone information avoiding the always first row being required
+    // store.setItem('dataToClone', JSON.stringify(dataToClone));
 
     rowsToProcess = rows.slice(srcIdx + 1);
 
     rowsToProcess.forEach((row: any) => {
       const date = row.InDate;
-      if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && Toolbar.checkIsWeekday(date)) {
+      if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && checkIsWeekday(date)) {
         _.assign(row, dataToClone);
-        if (Toolbar.checkIsHoliday(date)) {
+        if (checkIsHoliday(date)) {
           row.PayCodeID = "HOLIDAY";
         }
       }
     });
 
+    // Render in the View
     TcGridUtil.RefreshTCMGrid();
   }
 
-  // TODO: Check if this method could be removed. Came from the refactor
-  findFirstWeekday(rows: any[]) {
+}
 
-    let srcRow;
-    let isFilled;
-    let srcIdx = 0;
-    const rowsLimit = rows.length - 1;
+// "Statics"
 
-    do {
-      srcIdx++;
-      srcRow = rows[srcIdx];
-      isFilled = Toolbar.checkIsWeekdayRow(srcRow);
-    } while (!isFilled && srcIdx < rowsLimit);
+function checkIsWeekday(date: Date) {
+  const dayOfWeek = date.getUTCDay();
+  return dayOfWeek !== 0 && dayOfWeek !== 6;
+}
 
-    return isFilled ? {srcIdx, srcRow} : undefined;
-  }
+function checkIsWeekdayRow(row: any) {
+  return checkIsWeekday(row.InDate);
+}
 
+function checkIsFilledRow(row: any) {
+  return row.TotalHours > 0 && row.Value > 0 && row.PayCodeID && row.Lcf3 && row.Lcf4;
+}
+
+function checkIsHoliday(date: Date) {
+  return holidaysHelper.isHoliday(date);
+}
+
+function showAlert(message: string) {
+  const alert = document.querySelector('.adp-next__alert') as any;
+
+  alert.querySelector('.adp-next__alert-message').textContent = message;
+
+  alert.querySelector('.adp-next__close').onclick = () => {
+    alert.close();
+  };
+
+  alert.showModal();
+}
+
+function findFirstFilled(rows: any[]) {
+  let srcRow;
+  let isFilled;
+  let srcIdx = 0;
+  const rowsLimit = rows.length - 1;
+
+  do {
+    srcIdx++;
+    srcRow = rows[srcIdx];
+    isFilled = checkIsFilledRow(srcRow);
+  } while (!isFilled && srcIdx < rowsLimit);
+
+  return isFilled ? {srcIdx, srcRow} : undefined;
 }
 
 export const toolbar = new Toolbar();
