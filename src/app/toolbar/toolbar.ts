@@ -1,88 +1,119 @@
-import * as Holidays from 'date-holidays';
 import { whenElementReady } from '../shared/dom.util';
+import { holidaysUtil } from '../shared/holidays.util';
 import * as store from '../shared/store.util';
+import { AdpEntry } from './models';
 import './toolbar.style';
 
 
-const holidaysHelper = new Holidays();
-
-
-async function addToolbar() {
+function addToolbar() {
 
   // tslint:disable-next-line:no-require-imports
-  const toolbarHtml = require('./toolbar.tpl');
+  const toolbarHtml = require('./toolbar.tpl') as string;
   document.querySelector('#appContainer').insertAdjacentHTML('afterbegin', toolbarHtml);
 
-  const toolbar = document.querySelector('.adp-next');
-  const copy = toolbar.querySelector('.adp-next__copy');
-  const country = toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
-
   const countryCodeKey = 'adp-next__countryCode';
-
-  const countryCode = await store.getItem(countryCodeKey);
-  if (countryCode) {
-    country.value = countryCode;
-    holidaysHelper.init(countryCode);
-  }
-
-  copy.addEventListener('click', evt => {
-    copyAll();
-  });
+  const toolbar = document.querySelector('.adp-next') as HTMLElement;
+  const country = toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
+  const copy = toolbar.querySelector('.adp-next__copy') as HTMLButtonElement;
 
   country.addEventListener('change', async () => {
     const countryCode = country.value;
     if (countryCode) {
-      holidaysHelper.init(countryCode);
+      holidaysUtil.init(countryCode);
       await store.setItem(countryCodeKey, countryCode);
     } else {
       await store.removeItem(countryCodeKey);
     }
-    enableToolbar(!!countryCode);
+    enableActionControls(toolbar, !!countryCode);
+  });
+
+  copy.addEventListener('click', evt => {
+    copyRows(TcGridTable.DataGrid.store.data);
+  });
+
+  store.getItem(countryCodeKey).then(countryCode => {
+    if (countryCode) {
+      country.value = countryCode;
+    }
   });
 
   whenElementReady('TcGrid', () => {
     country.removeAttribute('disabled');
-    enableToolbar(!!country.value);
+    enableActionControls(toolbar, !!country.value);
   });
 }
 
-function enableToolbar(enable: boolean) {
-  const toolbar = document.querySelector('.adp-next');
-  const copy = toolbar.querySelector('.adp-next__copy');
+function enableActionControls(toolbar: HTMLElement, enable: boolean) {
+  const actionControls = toolbar.querySelectorAll('.adp-next__form button');
   if (enable) {
-    copy.removeAttribute('disabled');
+    for (const actionControl of actionControls) {
+      actionControl.removeAttribute('disabled');
+    }
   } else {
-    copy.setAttribute('disabled', 'disabled');
+    for (const actionControl of actionControls) {
+      actionControl.setAttribute('disabled', 'disabled');
+    }
   }
 }
 
-function postGridUpdate() {
-  TcGridUtil.ResetStoreArrayPositions();
-  TcGridUtil.CreateDTORecordXReferences();
-  dojo.destroy(TcGridTable.DataGrid.grid);
-  TcGridUtil.renderNewAndAdjustLayout();
-}
+function copyRows(rows: AdpEntry[]) {
 
-function findFirstWeekday(rows: any[]) {
-  
-    let srcRow;
-    let isFilled;
-    let srcIdx = 0;
-    const rowsLimit = rows.length - 1;
-  
-    do {
-      srcIdx++;
-      srcRow = rows[srcIdx];
-      isFilled = checkIsWeekdayRow(srcRow);
-    } while (!isFilled && srcIdx < rowsLimit);
-  
-    return isFilled ? { srcIdx, srcRow } : undefined;
+  const firstFilledResp = findFirstFilledRow(rows);
+
+  if (!firstFilledResp) {
+    showAlert('Fill a source row before copy.');
+    return;
   }
 
-function findFirstFilled(rows: any[]) {
+  const { srcIdx, srcRow } = firstFilledResp;
 
-  let srcRow;
-  let isFilled;
+  // Set status as changed  
+  const clonedRow: AdpEntry = { ProcessDTOStatus: 1 };
+  // Only clone the needed properties
+  ['PayCodeID', 'Lcf3', 'Lcf4', 'RecordType', 'TotalHours', 'Value'].forEach(prop => {
+    clonedRow[prop] = srcRow[prop];
+  });
+
+  // TODO: To Implement the always persistant clone information avoiding the always first row being required
+  // store.setItem('dataToClone', JSON.stringify(dataToClone));
+
+  const rowsToProcess: AdpEntry[] = rows.slice(srcIdx + 1);
+
+  rowsToProcess.forEach(row => {
+    const date = row.InDate;
+    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(date)) {
+      Object.assign(row, clonedRow);
+      if (holidaysUtil.isHoliday(date)) {
+        row.PayCodeID = 'HOLIDAY';
+      }
+    }
+  });
+
+  // Render in the View
+  TcGridUtil.RefreshTCMGrid();
+}
+
+function checkIsFilledRow(row: AdpEntry) {
+  return row.PayCodeID && row.Lcf3 && row.Lcf4 && row.TotalHours > 0 && row.Value > 0;
+}
+
+function showAlert(message: string) {
+
+  const alertCmp = document.querySelector('.adp-next__alert') as any;
+
+  alertCmp.querySelector('.adp-next__alert-message').textContent = message;
+
+  alertCmp.querySelector('.adp-next__close').onclick = () => {
+    alertCmp.close();
+  };
+
+  alertCmp.showModal();
+}
+
+function findFirstFilledRow(rows: AdpEntry[]) {
+
+  let srcRow: AdpEntry;
+  let isFilled: boolean;
   let srcIdx = 0;
   const rowsLimit = rows.length - 1;
 
@@ -95,104 +126,11 @@ function findFirstFilled(rows: any[]) {
   return isFilled ? { srcIdx, srcRow } : undefined;
 }
 
-function copyAll() {
-
-  const rows = TcGridView.ProcessedServerResponse.items;
-  
-  const firstFilledResp = findFirstFilled(rows);
-  
-  if (!firstFilledResp) {
-    showAlert('Fill a source row before copy.');
-    return;
-  }
-  
-  const { srcIdx, srcRow } = firstFilledResp;
-
-  store.setItem('srcRow', JSON.stringify(srcRow));
-  
-  let plusDays = 1;
-  let newIdx = srcIdx + 1;
-  const rowsLimit = rows.length - 1;
-  const ONE_DAY_IN_MILLIS = 864e5;
-
-  while (newIdx < rowsLimit) {
-
-    let nextRow = rows[newIdx];
-    let isWeekday = checkIsWeekday(nextRow.InDate);
-
-    while (!isWeekday && newIdx < rowsLimit) {
-      plusDays++;
-      newIdx++;
-      nextRow = rows[newIdx];
-      isWeekday = checkIsWeekday(nextRow.InDate);
-    }
-
-    // each new week starts with two extra rows for the headers, ignore them.
-    const headersCount = nextRow.InDate.getDay() === 1 ? 2 : 0;
-
-    plusDays -= headersCount;
-
-    const days = ONE_DAY_IN_MILLIS * plusDays;
-    const date = new Date(srcRow.InDate.valueOf() + days);
-
-    const newRow = { ...srcRow };
-    newRow.PayDate = new Date(date);
-    newRow.InDate = new Date(date);
-    newRow.OutDate = new Date(date);
-
-    const isHoliday = checkIsHoliday(date);
-    if (isHoliday) {
-      newRow.PayCodeID = 'HOLIDAY';
-    }
-
-    const newCopiedRow = TcGridUtil.CopyRow(newRow, true, true);
-    newCopiedRow.WeekNumber = TcGridUtil.IdentifyWeekNumber(newCopiedRow.InDate);
-
-    const newPos = TcGridUtil.StoreItemLocation(rows, newIdx);
-    rows[newPos] = newCopiedRow;
-
-    plusDays++;
-    newIdx++;
-  }
-
-  postGridUpdate();
-}
-
-export function checkIsWeekday(date: Date) {
-  const dayOfWeek = date.getUTCDay();
-  return dayOfWeek !== 0 && dayOfWeek !== 6;
-}
-
-export function checkIsHoliday(date: Date) {
-  return holidaysHelper.isHoliday(date);
-}
-
-function checkIsFilledRow(row: any) {
-  return row.InDate && row.PayCodeID;
-}
-
-function checkIsWeekdayRow(row: any) {
-  return checkIsWeekday(row.InDate);
-}
-
-function showAlert(message: string) {
-
-  const alert = document.querySelector('.adp-next__alert') as any;
-
-  alert.querySelector('.adp-next__alert-message').textContent = message;
-
-  alert.querySelector('.adp-next__close').onclick = () => {
-    alert.close();
-  };
-
-  alert.showModal();
-}
-
 function checkToolbar() {
 
   const path = location.hash;
   const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
-  const toolbar = document.querySelector('.adp-next');
+  const toolbar = document.querySelector('.adp-next') as HTMLElement;
 
   if (path === myTimecardPath) {
     if (!toolbar) {

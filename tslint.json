@@ -25,6 +25,7 @@
       "timeEnd",
       "trace"
     ],
+    "only-arrow-functions": false,
     "no-unnecessary-initializer": true,
     "object-literal-shorthand": false,
     "one-variable-per-declaration": [true],
@@ -68,6 +69,7 @@
       }
     ],
 
+    "space-before-function-paren": [false, "always"],
     "arrow-parens": [false],
     "align": [true],
     "class-name": true,
