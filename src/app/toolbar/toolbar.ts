@@ -19,6 +19,7 @@ class Toolbar {
     // tslint:disable-next-line:no-require-imports
     this.toolbarHtml = require('./toolbar.tpl');
     this.appContainer = document.querySelector('#appContainer');
+    this.countryCodeKey = 'adp-next__countryCode';
 
     this.checkToolbar();
     window.addEventListener('hashchange', this.checkToolbar);
@@ -43,11 +44,9 @@ class Toolbar {
   domSelectors() {
 
     this.appContainer.insertAdjacentHTML('afterbegin', this.toolbarHtml);
-
     this.toolbar = document.querySelector('.adp-next');
     this.copy = this.toolbar.querySelector('.adp-next__copy');
     this.country = this.toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
-    this.countryCodeKey = 'adp-next__countryCode';
 
   }
 
@@ -124,7 +123,7 @@ class Toolbar {
     rowsToProcess.forEach((row: any) => {
       const date = row.InDate;
       if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && checkIsWeekday(date)) {
-        _.assign(row, dataToClone);
+        Object.assign(row, dataToClone);
         if (checkIsHoliday(date)) {
           row.PayCodeID = "HOLIDAY";
         }
