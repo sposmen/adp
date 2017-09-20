@@ -1,5 +1,5 @@
 import * as Holidays from 'date-holidays';
-import { whenElementReady } from '../shared/dom.util';
+import {whenElementReady} from '../shared/dom.util';
 import * as store from '../shared/store.util';
 import './toolbar.style';
 
@@ -33,18 +33,11 @@ class Toolbar {
   }
 
   static checkIsFilledRow(row: any) {
-    return row.InDate && row.PayCodeID;
+    return row.TotalHours > 0 && row.Value > 0 && row.PayCodeID && row.Lcf3 && row.Lcf4;
   }
 
   static checkIsHoliday(date: Date) {
     return Toolbar.holidaysHelper.isHoliday(date);
-  }
-
-  static postGridUpdate() {
-    TcGridUtil.ResetStoreArrayPositions();
-    TcGridUtil.CreateDTORecordXReferences();
-    dojo.destroy(TcGridTable.DataGrid.grid);
-    TcGridUtil.renderNewAndAdjustLayout();
   }
 
   static showAlert(message: string) {
@@ -89,7 +82,7 @@ class Toolbar {
       this.toolbar.parentNode.removeChild(this.toolbar);
       this.toolbar = undefined;
     }
-  };
+  }
 
   setSelectors() {
 
@@ -128,7 +121,7 @@ class Toolbar {
     }
 
     this.enableToolbar(!!countryCode);
-  };
+  }
 
   enableToolbar(enable: boolean) {
     if (enable) {
@@ -141,72 +134,42 @@ class Toolbar {
   enableControls = () => {
     this.country.removeAttribute('disabled');
     this.enableToolbar(!!this.country.value);
-  };
+  }
 
   copyAll = () => {
 
-    const rows = TcGridView.ProcessedServerResponse.items;
+    let rowsToProcess;
+
+    const rows = TcGridTable.DataGrid.store.data;
 
     const firstFilledResp = Toolbar.findFirstFilled(rows);
 
     if (!firstFilledResp) {
-      Toolbar.showAlert('Fill a source row before copy.');
-      return;
+      return Toolbar.showAlert('Fill a source row before copy.');
     }
 
     const {srcIdx, srcRow} = firstFilledResp;
 
-    store.setItem('srcRow', JSON.stringify(srcRow));
+    const dataToClone = _.pick(srcRow, ["PayCodeID", "Lcf3", "Lcf4", "RecordType", "TotalHours", "Value"]);
 
-    let plusDays = 1;
-    let newIdx = srcIdx + 1;
-    const rowsLimit = rows.length - 1;
-    const ONE_DAY_IN_MILLIS = 864e5;
+    // Set status as changed
+    dataToClone.ProcessDTOStatus = 1;
 
-    while (newIdx < rowsLimit) {
+    store.setItem('dataToClone', JSON.stringify(dataToClone));
 
-      let nextRow = rows[newIdx];
+    rowsToProcess = rows.slice(srcIdx + 1);
 
-      while (!Toolbar.checkIsWeekday(nextRow.InDate) && newIdx < rowsLimit) {
-        plusDays++;
-        newIdx++;
-        nextRow = rows[newIdx];
+    rowsToProcess.forEach((row: any) => {
+      const date = row.InDate;
+      if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && Toolbar.checkIsWeekday(date)) {
+        _.assign(row, dataToClone);
+        if (Toolbar.checkIsHoliday(date)) {
+          row.PayCodeID = "HOLIDAY";
+        }
       }
+    });
 
-      // each new week starts with two extra rows for the headers, ignore them.
-      const headersCount = nextRow.InDate.getDay() === 1 ? 2 : 0;
-
-      plusDays -= headersCount;
-
-      const days = ONE_DAY_IN_MILLIS * plusDays;
-      const date = new Date(srcRow.InDate.valueOf() + days);
-
-      const newCopiedRow = TcGridUtil.CopyRow(this.cloneRowForDate(srcRow, date), true, true);
-      newCopiedRow.WeekNumber = TcGridUtil.IdentifyWeekNumber(newCopiedRow.InDate);
-
-      const newPos = TcGridUtil.StoreItemLocation(rows, newIdx);
-      rows[newPos] = newCopiedRow;
-
-      plusDays++;
-      newIdx++;
-    }
-
-    Toolbar.postGridUpdate();
-  };
-
-  cloneRowForDate(srcRow: any, date: Date) {
-    const newRow = {...srcRow};
-    newRow.PayDate = new Date(date);
-    newRow.InDate = new Date(date);
-    newRow.OutDate = new Date(date);
-
-    if (!!this.country.value) {
-      const isHoliday = Toolbar.checkIsHoliday(date);
-      if (isHoliday) {
-        newRow.PayCodeID = 'HOLIDAY';
-      }
-    }
-    return newRow;
+    TcGridUtil.RefreshTCMGrid();
   }
 
   // TODO: Check if this method could be removed. Came from the refactor
