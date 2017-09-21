@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const webpackMerge = require('webpack-merge');
 const helpers = require('./helpers');
 const commonConfig = require('./webpack.common');
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 const ENV = process.env.ENV = process.env.NODE_ENV = 'prod';
 
@@ -31,8 +32,12 @@ module.exports = function (options) {
         }
       }),
       new webpack.NoEmitOnErrorsPlugin(),
-      new webpack.optimize.UglifyJsPlugin({
-        sourceMap: true
+      new UglifyJSPlugin({
+        sourceMap: true,
+        uglifyOptions: {
+          ecma: 6
+        }
+
       })
     ]
   });

@@ -9,6 +9,6 @@ export function whenElementReady(id: string, callback: Function, timer = 200) {
     }
 
     whenElementReady(id, callback, timer);
-    
+
   }, timer);
 }
