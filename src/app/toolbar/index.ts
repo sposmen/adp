@@ -1,1 +1,1 @@
-import './toolbar';
+export * from './toolbar';

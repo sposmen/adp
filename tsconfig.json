@@ -2,12 +2,10 @@
     "compilerOptions": {
         "module": "es6",
         "target": "es6",
+        "noImplicitAny": true,
         "sourceMap": true,
-        "strict": true,
-        "strictNullChecks": false,
-        "noUnusedLocals": true,
-        "noImplicitThis": true,
-        "suppressImplicitAnyIndexErrors": true
+        "noUnusedLocals": false,
+        "noImplicitThis": true
     },
     "exclude": [
         "node_modules",
