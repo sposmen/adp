@@ -1,175 +1,119 @@
-import * as Holidays from 'date-holidays';
-import {whenElementReady} from '../shared/dom.util';
+import { whenElementReady } from '../shared/dom.util';
+import { holidaysUtil } from '../shared/holidays.util';
 import * as store from '../shared/store.util';
+import { AdpEntry } from './models';
 import './toolbar.style';
 
-const holidaysHelper = new Holidays();
 
-class Toolbar {
+function addToolbar() {
 
-  toolbar: any;
-  copy: any;
-  country: any;
-  countryCodeKey: string;
-  countryCode: string;
-  toolbarHtml: string;
-  appContainer: any;
+  // tslint:disable-next-line:no-require-imports
+  const toolbarHtml = require('./toolbar.tpl') as string;
+  document.querySelector('#appContainer').insertAdjacentHTML('afterbegin', toolbarHtml);
 
-  constructor() {
-    // tslint:disable-next-line:no-require-imports
-    this.toolbarHtml = require('./toolbar.tpl');
-    this.appContainer = document.querySelector('#appContainer');
-    this.countryCodeKey = 'adp-next__countryCode';
+  const countryCodeKey = 'adp-next__countryCode';
+  const toolbar = document.querySelector('.adp-next') as HTMLElement;
+  const country = toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
+  const copy = toolbar.querySelector('.adp-next__copy') as HTMLButtonElement;
 
-    this.checkToolbar();
-    window.addEventListener('hashchange', this.checkToolbar);
-  }
-
-  checkToolbar = () => {
-
-    const path = location.hash;
-    const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
-
-    if (path === myTimecardPath) {
-      if (!this.toolbar) {
-        this.domSelectors();
-        this.addToolbar();
-      }
-    } else if (this.toolbar) {
-      this.toolbar.parentNode.removeChild(this.toolbar);
-      this.toolbar = undefined;
-    }
-  }
-
-  domSelectors() {
-
-    this.appContainer.insertAdjacentHTML('afterbegin', this.toolbarHtml);
-    this.toolbar = document.querySelector('.adp-next');
-    this.copy = this.toolbar.querySelector('.adp-next__copy');
-    this.country = this.toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
-
-  }
-
-  async addToolbar() {
-
-    const countryCode = await store.getItem(this.countryCodeKey);
+  country.addEventListener('change', async () => {
+    const countryCode = country.value;
     if (countryCode) {
-      this.country.value = countryCode;
-      holidaysHelper.init(countryCode);
+      holidaysUtil.init(countryCode);
+      await store.setItem(countryCodeKey, countryCode);
+    } else {
+      await store.removeItem(countryCodeKey);
     }
+    enableActionControls(toolbar, !!countryCode);
+  });
 
-    this.copy.addEventListener('click', this.copyAll);
+  copy.addEventListener('click', evt => {
+    copyRows(TcGridTable.DataGrid.store.data);
+  });
 
-    this.country.addEventListener('change', this.setCountryCode);
-
-    whenElementReady('TcGrid', this.postGrid);
-  }
-
-  setCountryCode = async () => {
-    const countryCode = this.country.value;
+  store.getItem(countryCodeKey).then(countryCode => {
     if (countryCode) {
-      this.countryCode = countryCode;
-      holidaysHelper.init(countryCode);
-      await store.setItem(this.countryCodeKey, countryCode);
-    } else {
-      await store.removeItem(this.countryCodeKey);
+      country.value = countryCode;
     }
+  });
 
-    this.enableToolbar(!!countryCode);
-  }
+  whenElementReady('TcGrid', () => {
+    country.removeAttribute('disabled');
+    enableActionControls(toolbar, !!country.value);
+  });
+}
 
-  enableToolbar(enable: boolean) {
-    if (enable) {
-      this.copy.removeAttribute('disabled');
-    } else {
-      this.copy.setAttribute('disabled', 'disabled');
+function enableActionControls(toolbar: HTMLElement, enable: boolean) {
+  const actionControls = toolbar.querySelectorAll('.adp-next__form button');
+  if (enable) {
+    for (const actionControl of actionControls) {
+      actionControl.removeAttribute('disabled');
+    }
+  } else {
+    for (const actionControl of actionControls) {
+      actionControl.setAttribute('disabled', 'disabled');
     }
   }
+}
 
-  enableControls() {
-    this.country.removeAttribute('disabled');
-    this.enableToolbar(!!this.country.value);
+function copyRows(rows: AdpEntry[]) {
+
+  const firstFilledResp = findFirstFilledRow(rows);
+
+  if (!firstFilledResp) {
+    showAlert('Fill a source row before copy.');
+    return;
   }
 
-  postGrid = () => {
-    this.enableControls();
-    // TODO: Create a new method to assign the holiday class .isHoliday to view
-  }
+  const { srcIdx, srcRow } = firstFilledResp;
 
-  copyAll = () => {
+  // Set status as changed  
+  const clonedRow: AdpEntry = { ProcessDTOStatus: 1 };
+  // Only clone the needed properties
+  ['PayCodeID', 'Lcf3', 'Lcf4', 'RecordType', 'TotalHours', 'Value'].forEach(prop => {
+    clonedRow[prop] = srcRow[prop];
+  });
 
-    let rowsToProcess;
+  // TODO: To Implement the always persistant clone information avoiding the always first row being required
+  // store.setItem('dataToClone', JSON.stringify(dataToClone));
 
-    const rows = TcGridTable.DataGrid.store.data;
+  const rowsToProcess: AdpEntry[] = rows.slice(srcIdx + 1);
 
-    const firstFilledResp = findFirstFilled(rows);
-
-    if (!firstFilledResp) {
-      return showAlert('Fill a source row before copy.');
-    }
-
-    const {srcIdx, srcRow} = firstFilledResp;
-
-    const dataToClone = _.pick(srcRow, ["PayCodeID", "Lcf3", "Lcf4", "RecordType", "TotalHours", "Value"]);
-
-    // Set status as changed
-    dataToClone.ProcessDTOStatus = 1;
-
-    // TODO: To Implement the always persistant clone information avoiding the always first row being required
-    // store.setItem('dataToClone', JSON.stringify(dataToClone));
-
-    rowsToProcess = rows.slice(srcIdx + 1);
-
-    rowsToProcess.forEach((row: any) => {
-      const date = row.InDate;
-      if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && checkIsWeekday(date)) {
-        Object.assign(row, dataToClone);
-        if (checkIsHoliday(date)) {
-          row.PayCodeID = "HOLIDAY";
-        }
+  rowsToProcess.forEach(row => {
+    const date = row.InDate;
+    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(date)) {
+      Object.assign(row, clonedRow);
+      if (holidaysUtil.isHoliday(date)) {
+        row.PayCodeID = 'HOLIDAY';
       }
-    });
+    }
+  });
 
-    // Render in the View
-    TcGridUtil.RefreshTCMGrid();
-  }
-
+  // Render in the View
+  TcGridUtil.RefreshTCMGrid();
 }
 
-// "Statics"
-
-function checkIsWeekday(date: Date) {
-  const dayOfWeek = date.getUTCDay();
-  return dayOfWeek !== 0 && dayOfWeek !== 6;
-}
-
-function checkIsWeekdayRow(row: any) {
-  return checkIsWeekday(row.InDate);
-}
-
-function checkIsFilledRow(row: any) {
-  return row.TotalHours > 0 && row.Value > 0 && row.PayCodeID && row.Lcf3 && row.Lcf4;
-}
-
-function checkIsHoliday(date: Date) {
-  return holidaysHelper.isHoliday(date);
+function checkIsFilledRow(row: AdpEntry) {
+  return row.PayCodeID && row.Lcf3 && row.Lcf4 && row.TotalHours > 0 && row.Value > 0;
 }
 
 function showAlert(message: string) {
-  const alert = document.querySelector('.adp-next__alert') as any;
 
-  alert.querySelector('.adp-next__alert-message').textContent = message;
+  const alertCmp = document.querySelector('.adp-next__alert') as any;
 
-  alert.querySelector('.adp-next__close').onclick = () => {
-    alert.close();
+  alertCmp.querySelector('.adp-next__alert-message').textContent = message;
+
+  alertCmp.querySelector('.adp-next__close').onclick = () => {
+    alertCmp.close();
   };
 
-  alert.showModal();
+  alertCmp.showModal();
 }
 
-function findFirstFilled(rows: any[]) {
-  let srcRow;
-  let isFilled;
+function findFirstFilledRow(rows: AdpEntry[]) {
+
+  let srcRow: AdpEntry;
+  let isFilled: boolean;
   let srcIdx = 0;
   const rowsLimit = rows.length - 1;
 
@@ -179,7 +123,28 @@ function findFirstFilled(rows: any[]) {
     isFilled = checkIsFilledRow(srcRow);
   } while (!isFilled && srcIdx < rowsLimit);
 
-  return isFilled ? {srcIdx, srcRow} : undefined;
+  return isFilled ? { srcIdx, srcRow } : undefined;
 }
 
-export const toolbar = new Toolbar();
+function checkToolbar() {
+
+  const path = location.hash;
+  const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
+  const toolbar = document.querySelector('.adp-next') as HTMLElement;
+
+  if (path === myTimecardPath) {
+    if (!toolbar) {
+      addToolbar();
+    }
+  } else if (toolbar) {
+    toolbar.parentNode.removeChild(toolbar);
+  }
+}
+
+function init() {
+  checkToolbar();
+  window.addEventListener('hashchange', checkToolbar);
+}
+
+
+init();
