@@ -1,6 +1,7 @@
 # ADP Chrome Extension
 
 Chrome Extension using TypeScript and Webpack
+[try it](https://chrome.google.com/webstore/detail/adp-next/pcheblcfbcfphhpoijfaecicfamhjnon)
 
 ## Prerequisites
 
