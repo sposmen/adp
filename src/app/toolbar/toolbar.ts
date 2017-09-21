@@ -34,6 +34,7 @@ function addToolbar() {
   store.getItem(countryCodeKey).then(countryCode => {
     if (countryCode) {
       country.value = countryCode;
+      holidaysUtil.init(countryCode);      
     }
   });
 
@@ -80,10 +81,10 @@ function copyRows(rows: AdpEntry[]) {
   const rowsToProcess: AdpEntry[] = rows.slice(srcIdx + 1);
 
   rowsToProcess.forEach(row => {
-    const date = row.InDate;
-    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(date)) {
+    const inDate = row.InDate;
+    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(inDate)) {
       Object.assign(row, clonedRow);
-      if (holidaysUtil.isHoliday(date)) {
+      if (holidaysUtil.isHoliday(inDate)) {
         row.PayCodeID = 'HOLIDAY';
       }
     }

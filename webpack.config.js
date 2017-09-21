@@ -99,10 +99,10 @@ module.exports = function (ENV) {
                     }
                 }
             }),
+            new StyleLintPlugin(),
+            new CheckerPlugin(),
             new webpack.optimize.ModuleConcatenationPlugin(),
             new webpack.optimize.CommonsChunkPlugin(['app', 'vendor']),
-            new CheckerPlugin(),
-            new StyleLintPlugin(),
             new ExtractTextPlugin({
                 filename: 'app.css'
             }),
@@ -115,10 +115,7 @@ module.exports = function (ENV) {
 
     if (isProd) {
         config.plugins.push(
-            new webpack.NoEmitOnErrorsPlugin(),
-            new webpack.optimize.UglifyJsPlugin({
-                sourceMap: true
-            })
+            new webpack.NoEmitOnErrorsPlugin()
         );
     }
 
