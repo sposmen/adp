@@ -1,7 +1,7 @@
 import { whenElementReady } from '../shared/dom.util';
 import { holidaysUtil } from '../shared/holidays.util';
 import * as store from '../shared/store.util';
-import { AdpEntry } from './models';
+import { AdpRow } from './models';
 import './toolbar.style';
 
 
@@ -57,7 +57,7 @@ function enableActionControls(toolbar: HTMLElement, enable: boolean) {
   }
 }
 
-function copyRows(rows: AdpEntry[]) {
+function copyRows(rows: AdpRow[]) {
 
   const firstFilledResp = findFirstFilledRow(rows);
 
@@ -69,7 +69,7 @@ function copyRows(rows: AdpEntry[]) {
   const { srcIdx, srcRow } = firstFilledResp;
 
   // Set status as changed  
-  const clonedRow: AdpEntry = { ProcessDTOStatus: 1 };
+  const clonedRow: AdpRow = { ProcessDTOStatus: 1 };
   // Only clone the needed properties
   ['PayCodeID', 'Lcf3', 'Lcf4', 'RecordType', 'TotalHours', 'Value'].forEach(prop => {
     clonedRow[prop] = srcRow[prop];
@@ -78,7 +78,7 @@ function copyRows(rows: AdpEntry[]) {
   // TODO: To Implement the always persistant clone information avoiding the always first row being required
   // store.setItem('dataToClone', JSON.stringify(dataToClone));
 
-  const rowsToProcess: AdpEntry[] = rows.slice(srcIdx + 1);
+  const rowsToProcess: AdpRow[] = rows.slice(srcIdx + 1);
 
   rowsToProcess.forEach(row => {
     const inDate = row.InDate;
@@ -94,7 +94,7 @@ function copyRows(rows: AdpEntry[]) {
   TcGridUtil.RefreshTCMGrid();
 }
 
-function checkIsFilledRow(row: AdpEntry) {
+function checkIsFilledRow(row: AdpRow) {
   return row.PayCodeID && row.Lcf3 && row.Lcf4 && row.TotalHours > 0 && row.Value > 0;
 }
 
@@ -111,9 +111,9 @@ function showAlert(message: string) {
   alertCmp.showModal();
 }
 
-function findFirstFilledRow(rows: AdpEntry[]) {
+function findFirstFilledRow(rows: AdpRow[]) {
 
-  let srcRow: AdpEntry;
+  let srcRow: AdpRow;
   let isFilled: boolean;
   let srcIdx = 0;
   const rowsLimit = rows.length - 1;

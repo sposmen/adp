@@ -1,4 +1,4 @@
-export interface AdpEntry {
+export interface AdpRow {
   PayCodeID?: string;
   Lcf3?: string;
   Lcf4?: string;
