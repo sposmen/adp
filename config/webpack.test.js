@@ -11,7 +11,7 @@ module.exports = {
   devtool: 'inline-source-map',
 
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.ts', '.js', '.scss', '.html']
   },
 
   module: {
@@ -27,6 +27,20 @@ module.exports = {
         loader: 'awesome-typescript-loader',
         query: {
           configFileName: 'tsconfig-test.json'
+        }
+      },
+      {
+        test: /\.scss$/,
+        use: 'null-loader'
+      },
+      {
+        test: /\.(gif|jpe?g|png|svg|tiff|webp)$/,
+        use: 'null-loader'
+      },
+      {
+        test: /\.html$/,
+        use: {
+          loader: 'html-loader'
         }
       },
 

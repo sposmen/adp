@@ -9,11 +9,11 @@
         "noImplicitThis": true,
         "suppressImplicitAnyIndexErrors": true,
         "lib": [
-          "es2017",
-          "dom"
+            "es2017",
+            "dom"
         ],
         "typeRoots": [
-          "node_modules/@types"
+            "node_modules/@types"
         ]
     },
     "exclude": [

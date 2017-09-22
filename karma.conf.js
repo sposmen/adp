@@ -33,6 +33,9 @@ module.exports = function (config) {
     // Webpack Config at ./webpack.test.js
     webpack: testWebpackConfig,
 
+    // Webpack please don't spam the console when running in karma!
+    webpackMiddleware: { stats: 'errors-only' },    
+
     coverageReporter: {
       reporters: [
         { type: 'in-memory' }

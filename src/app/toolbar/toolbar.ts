@@ -1,40 +1,39 @@
+import './toolbar.style';
 import { whenElementReady } from '../shared/dom.util';
 import { holidaysUtil } from '../shared/holidays.util';
 import * as store from '../shared/store.util';
-import { AdpRow } from './models';
-import './toolbar.style';
+
+export const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
 
 
-function addToolbar() {
+export function addToolbar() {
 
   // tslint:disable-next-line:no-require-imports
   const toolbarHtml = require('./toolbar.tpl') as string;
   document.querySelector('#appContainer').insertAdjacentHTML('afterbegin', toolbarHtml);
 
   const countryCodeKey = 'adp-next__countryCode';
-  const toolbar = document.querySelector('.adp-next') as HTMLElement;
+  const toolbar = document.querySelector('.adp-next');
   const country = toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
-  const copy = toolbar.querySelector('.adp-next__copy') as HTMLButtonElement;
+  const copy = toolbar.querySelector('.adp-next__copy');
 
-  country.addEventListener('change', async () => {
+  country.addEventListener('change', () => {
     const countryCode = country.value;
     if (countryCode) {
-      holidaysUtil.init(countryCode);
-      await store.setItem(countryCodeKey, countryCode);
+      store.setItem(countryCodeKey, countryCode);
     } else {
-      await store.removeItem(countryCodeKey);
+      store.removeItem(countryCodeKey);
     }
     enableActionControls(toolbar, !!countryCode);
   });
 
   copy.addEventListener('click', evt => {
-    copyRows(TcGridTable.DataGrid.store.data);
+    copyRows(TcGridTable.DataGrid.store.data, country.value);
   });
 
-  store.getItem(countryCodeKey).then(countryCode => {
+  store.getItem(countryCodeKey, countryCode => {
     if (countryCode) {
       country.value = countryCode;
-      holidaysUtil.init(countryCode);      
     }
   });
 
@@ -44,7 +43,7 @@ function addToolbar() {
   });
 }
 
-function enableActionControls(toolbar: HTMLElement, enable: boolean) {
+export function enableActionControls(toolbar: Element, enable: boolean) {
   const actionControls = Array.from(toolbar.querySelectorAll('.adp-next__form button'));
   if (enable) {
     for (const actionControl of actionControls) {
@@ -57,7 +56,7 @@ function enableActionControls(toolbar: HTMLElement, enable: boolean) {
   }
 }
 
-function copyRows(rows: AdpRow[]) {
+export function copyRows(rows: AdpRow[], countryCode: string) {
 
   const firstFilledResp = findFirstFilledRow(rows);
 
@@ -65,6 +64,8 @@ function copyRows(rows: AdpRow[]) {
     showAlert('Fill a source row before copy.');
     return;
   }
+
+  holidaysUtil.init(countryCode);
 
   const { srcIdx, srcRow } = firstFilledResp;
 
@@ -82,7 +83,7 @@ function copyRows(rows: AdpRow[]) {
 
   rowsToProcess.forEach(row => {
     const inDate = row.InDate;
-    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(inDate)) {
+    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(inDate, row)) {
       Object.assign(row, clonedRow);
       if (holidaysUtil.isHoliday(inDate)) {
         row.PayCodeID = 'HOLIDAY';
@@ -94,11 +95,11 @@ function copyRows(rows: AdpRow[]) {
   TcGridUtil.RefreshTCMGrid();
 }
 
-function checkIsFilledRow(row: AdpRow) {
+export function checkIsFilledRow(row: AdpRow) {
   return row.PayCodeID && row.Lcf3 && row.Lcf4 && row.TotalHours > 0 && row.Value > 0;
 }
 
-function showAlert(message: string) {
+export function showAlert(message: string) {
 
   const alertCmp = document.querySelector('.adp-next__alert') as any;
 
@@ -111,7 +112,7 @@ function showAlert(message: string) {
   alertCmp.showModal();
 }
 
-function findFirstFilledRow(rows: AdpRow[]) {
+export function findFirstFilledRow(rows: AdpRow[]) {
 
   let srcRow: AdpRow;
   let isFilled: boolean;
@@ -127,11 +128,10 @@ function findFirstFilledRow(rows: AdpRow[]) {
   return isFilled ? { srcIdx, srcRow } : undefined;
 }
 
-function checkToolbar() {
+export function checkToolbar() {
 
   const path = location.hash;
-  const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
-  const toolbar = document.querySelector('.adp-next') as HTMLElement;
+  const toolbar = document.querySelector('.adp-next');
 
   if (path === myTimecardPath) {
     if (!toolbar) {
@@ -142,7 +142,7 @@ function checkToolbar() {
   }
 }
 
-function init() {
+export function init() {
   checkToolbar();
   window.addEventListener('hashchange', checkToolbar);
 }

@@ -16,7 +16,7 @@ module.exports = function (ENV) {
         devtool: 'source-map',
 
         resolve: {
-            extensions: ['.ts', '.js', '.scss', '.html'],
+            extensions: ['.ts', '.js', '.scss', '.html']
         },
 
         entry: {
@@ -76,7 +76,6 @@ module.exports = function (ENV) {
                         loader: 'html-loader'
                     }
                 }
-
             ]
         },
 

@@ -1,5 +1,6 @@
 // Load polyfills needed by running in phantomjs
 require('core-js/fn/object/assign');
+require('core-js/fn/array/from');
 
 
 /*
