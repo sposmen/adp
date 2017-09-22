@@ -83,7 +83,7 @@ export function copyRows(rows: AdpRow[], countryCode: string) {
 
   rowsToProcess.forEach(row => {
     const inDate = row.InDate;
-    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(inDate, row)) {
+    if (row.RecordType === TcGridUtil.RecordTypes.DatePlaceholder && holidaysUtil.isWeekday(inDate)) {
       Object.assign(row, clonedRow);
       if (holidaysUtil.isHoliday(inDate)) {
         row.PayCodeID = 'HOLIDAY';
