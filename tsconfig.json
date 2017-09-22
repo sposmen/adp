@@ -7,7 +7,14 @@
         "strictNullChecks": false,
         "noUnusedLocals": true,
         "noImplicitThis": true,
-        "suppressImplicitAnyIndexErrors": true
+        "suppressImplicitAnyIndexErrors": true,
+        "lib": [
+          "es2017",
+          "dom"
+        ],
+        "typeRoots": [
+          "node_modules/@types"
+        ]
     },
     "exclude": [
         "node_modules",

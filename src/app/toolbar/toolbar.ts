@@ -45,7 +45,7 @@ function addToolbar() {
 }
 
 function enableActionControls(toolbar: HTMLElement, enable: boolean) {
-  const actionControls = toolbar.querySelectorAll('.adp-next__form button');
+  const actionControls = Array.from(toolbar.querySelectorAll('.adp-next__form button'));
   if (enable) {
     for (const actionControl of actionControls) {
       actionControl.removeAttribute('disabled');
