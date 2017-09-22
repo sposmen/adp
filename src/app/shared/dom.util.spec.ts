@@ -6,13 +6,13 @@ describe('dom.util', () => {
     
     whenElementReady('some-id', () => {
       done();
-    }, 100);
+    }, 50);
 
     setTimeout(() => {
       const newElement = document.createElement('div');
       newElement.id = 'some-id';
       document.body.appendChild(newElement);
-    }, 100);
+    }, 50);
   });
 
 });
