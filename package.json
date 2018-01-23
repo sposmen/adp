@@ -1,6 +1,6 @@
 {
   "name": "adp-next",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "ADP Next",
   "main": "src/content-script.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "stylelint": "stylelint --config stylelint.config.js \"src/**/*.scss\"",
     "lint": "npm run tslint && npm run stylelint",
     "start": "npm run clean && webpack --progress --profile --watch",
-    "test": "rimraf reports/coverage && npm run lint && karma start",
+    "test": "rimraf coverage && npm run lint && karma start",
     "build": "npm run clean && webpack --progress --profile --bail --env=prod",
     "holidays2json": "holidays2json --pick AR,CO,UY,US,VE",
     "postinstall": "npm run holidays2json"
@@ -45,7 +45,6 @@
     "karma-remap-coverage": "0.1.4",
     "karma-sourcemap-loader": "0.3.7",
     "karma-webpack": "2.0.4",
-    "lodash": "4.17.4",
     "null-loader": "0.1.1",
     "phantomjs-prebuilt": "2.1.15",
     "postcss": "6.0.11",

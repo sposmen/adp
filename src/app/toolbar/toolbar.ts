@@ -70,11 +70,15 @@ export function copyRows(rows: AdpRow[], countryCode: string) {
   const { srcIdx, srcRow } = firstFilledResp;
 
   // Set status as changed  
-  const clonedRow: AdpRow = { ProcessDTOStatus: 1 };
+  const clonedRow: AdpRow = {};
+  
   // Only clone the needed properties
-  ['PayCodeID', 'Lcf3', 'Lcf4', 'RecordType', 'TotalHours', 'Value'].forEach(prop => {
+  ['Lcf3', 'Lcf4', 'RecordType', 'TotalHours', 'Value'].forEach(prop => {
     clonedRow[prop] = srcRow[prop];
   });
+
+  clonedRow['ProcessDTOStatus'] = 1;
+  clonedRow['PayCodeID'] = 'REGULAR';
 
   // TODO: To Implement the always persistant clone information avoiding the always first row being required
   // store.setItem('dataToClone', JSON.stringify(dataToClone));
