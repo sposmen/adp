@@ -3,14 +3,24 @@ import { whenElementReady } from '../shared/dom.util';
 import { holidaysUtil } from '../shared/holidays.util';
 import * as store from '../shared/store.util';
 
-export const myTimecardPath = '#/Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
+export const myTimecardPath = '#Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
 
-
+// Wait until element exist!
 export function addToolbar() {
+  if(document.querySelector('#TimecardManager')){
+    _addToolbar()
+  } else {
+    setTimeout(addToolbar, 1000)
+  }
+}
+
+function _addToolbar() {
 
   // tslint:disable-next-line:no-require-imports
   const toolbarHtml = require('./toolbar.tpl') as string;
-  document.querySelector('#appContainer').insertAdjacentHTML('afterbegin', toolbarHtml);
+  document.querySelector('#TimecardManager').insertAdjacentHTML('afterbegin', toolbarHtml);
+  console.log('Loading ADP-Next');
+  console.log('*******************************************************************************************************************');
 
   const countryCodeKey = 'adp-next__countryCode';
   const toolbar = document.querySelector('.adp-next');
