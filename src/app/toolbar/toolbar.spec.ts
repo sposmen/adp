@@ -51,7 +51,7 @@ function prepareContext() {
   location.hash = myTimecardPath;
 
   document.body.innerHTML = `
-    <div id="appContainer">
+    <div id="TimecardManager">
       <div id="TcGrid"></div>
     </div>
   `;
