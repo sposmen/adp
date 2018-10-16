@@ -10,7 +10,7 @@ export function addToolbar() {
   if (document.querySelector('#TimecardManager')) {
     _addToolbar();
   } else {
-    setTimeout(addToolbar, 1000);
+    requestAnimationFrame(addToolbar);
   }
 }
 
