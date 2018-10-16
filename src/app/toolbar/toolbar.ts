@@ -1,16 +1,16 @@
 import './toolbar.style';
-import { whenElementReady } from '../shared/dom.util';
-import { holidaysUtil } from '../shared/holidays.util';
+import {whenElementReady} from '../shared/dom.util';
+import {holidaysUtil} from '../shared/holidays.util';
 import * as store from '../shared/store.util';
 
 export const myTimecardPath = '#Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
 
 // Wait until element exist!
 export function addToolbar() {
-  if(document.querySelector('#TimecardManager')){
-    _addToolbar()
+  if (document.querySelector('#TimecardManager')) {
+    _addToolbar();
   } else {
-    setTimeout(addToolbar, 1000)
+    setTimeout(addToolbar, 1000);
   }
 }
 
@@ -77,11 +77,11 @@ export function copyRows(rows: AdpRow[], countryCode: string) {
 
   holidaysUtil.init(countryCode);
 
-  const { srcIdx, srcRow } = firstFilledResp;
+  const {srcIdx, srcRow} = firstFilledResp;
 
   // Set status as changed  
   const clonedRow: AdpRow = {};
-  
+
   // Only clone the needed properties
   ['Lcf3', 'Lcf4', 'RecordType', 'TotalHours', 'Value'].forEach(prop => {
     clonedRow[prop] = srcRow[prop];
@@ -139,7 +139,7 @@ export function findFirstFilledRow(rows: AdpRow[]) {
     isFilled = checkIsFilledRow(srcRow);
   } while (!isFilled && srcIdx < rowsLimit);
 
-  return isFilled ? { srcIdx, srcRow } : undefined;
+  return isFilled ? {srcIdx, srcRow} : undefined;
 }
 
 export function checkToolbar() {
