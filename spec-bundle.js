@@ -1,8 +1,3 @@
-// Load polyfills needed by running in phantomjs
-require('core-js/fn/object/assign');
-require('core-js/fn/array/from');
-
-
 /*
  * When testing with webpack and ES6, we have to do some extra
  * things to get testing to work right. Because we are gonna write tests
@@ -23,7 +18,7 @@ Error.stackTraceLimit = Infinity;
  * any file that ends with spec.ts and get its path. By passing in true
  * we say do this recursively
  */
-var testContext = require.context('../src', true, /\.spec\.ts/);
+var testContext = require.context('./src', true, /\.spec\.ts/);
 
 /*
  * get all the files, for each file, call the context function
@@ -34,5 +29,5 @@ function requireAll(requireContext) {
   return requireContext.keys().map(requireContext);
 }
 
-// requires and returns all modules that match
-var modules = requireAll(testContext);
+// requires all modules that match
+requireAll(testContext);

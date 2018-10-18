@@ -1,14 +1,12 @@
 const path = require('path');
-const webpack = require('webpack');
-
-const ROOT = path.resolve(__dirname, '..');
-
-const ENV = process.env.ENV = process.env.NODE_ENV = 'test';
+const ROOT = path.resolve(__dirname, '.');
 
 
 module.exports = {
 
   devtool: 'inline-source-map',
+
+  mode: 'development',
 
   resolve: {
     extensions: ['.ts', '.js', '.scss', '.html']
@@ -60,19 +58,6 @@ module.exports = {
         ]
       }
     ]
-  },
-
-  plugins: [
-    new webpack.DefinePlugin({
-      'ENV': JSON.stringify(ENV),
-      'process.env': {
-        'ENV': JSON.stringify(ENV),
-        'NODE_ENV': JSON.stringify(ENV)
-      }
-    }),
-    new webpack.LoaderOptionsPlugin({
-      debug: true
-    })
-  ]
+  }
 
 };

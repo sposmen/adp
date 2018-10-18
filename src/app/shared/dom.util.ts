@@ -1,4 +1,4 @@
-export function whenElementReady(id: string, callback: Function, timeout = 200) {
+export function whenElementReady(id: string, callback: Function, timeout = 100) {
   window.requestIdleCallback(() => {
 
     const el = document.getElementById(id);
@@ -9,6 +9,5 @@ export function whenElementReady(id: string, callback: Function, timeout = 200) 
     }
 
     whenElementReady(id, callback, timeout);
-
   }, { timeout });
 }

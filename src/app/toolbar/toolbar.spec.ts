@@ -49,6 +49,10 @@ function prepareContext() {
   location.hash = myTimecardPath;
 
   document.body.innerHTML = `
+    <div class="adp-next__alert">
+      <button class="adp-next__close"></button>
+      <div class="adp-next__alert-message"></div>
+    </div>
     <div id="TimecardManager">
       <div id="TcGrid"></div>
     </div>
