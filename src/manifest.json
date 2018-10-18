@@ -23,7 +23,7 @@
     ]
   },
   "description": "Add some useful features to ADP",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "permissions": [
     "storage"
   ],
