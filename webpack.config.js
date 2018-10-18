@@ -1,122 +1,143 @@
 const path = require('path');
-const webpack = require('webpack');
+const miniCssExtractPlugin = require('mini-css-extract-plugin');
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const StyleLintPlugin = require('stylelint-webpack-plugin');
+const styleLintPlugin = require('stylelint-webpack-plugin');
+const postcssPresetEnv = require('postcss-preset-env');
 
-module.exports = function (ENV) {
 
-    ENV = ENV || 'dev';
+module.exports = (env, argv) => {
 
-    const isProd = ENV === 'prod';
+  const mode = argv.mode || 'development';
 
-    const config = {
+  console.log('Webpack mode ***', mode);
 
-        devtool: 'source-map',
+  const config = {
 
-        resolve: {
-            extensions: ['.ts', '.js', '.scss', '.html']
+    mode: mode,
+
+    performance: {
+      hints: false
+    },
+
+    optimization: {
+      splitChunks: {
+        cacheGroups: {
+          vendor: {
+            chunks: 'initial',
+            test: path.resolve(__dirname, 'node_modules'),
+            name: 'vendor',
+            enforce: true
+          }
+        }
+      }
+    },
+
+    devtool: 'source-map',
+
+    resolve: {
+      extensions: ['.ts', '.js', '.scss', '.html']
+    },
+
+    entry: {
+      'vendor': './src/app/vendor.ts',
+      'app': './src/app/app.ts'
+    },
+
+    output: {
+      path: path.resolve('dist'),
+      publicPath: '/',
+      filename: '[name].js'
+    },
+
+    module: {
+      rules: [
+        /*
+        * Source map loader support for *.js files
+        * Extracts SourceMaps for source files that as added as sourceMappingURL comment.
+        *
+        * See: https://github.com/webpack/source-map-loader
+        */
+        {
+          test: /\.js$/,
+          use: 'source-map-loader',
+          enforce: 'pre'
         },
-
-        entry: {
-            'vendor': './src/app/vendor.ts',
-            'app': './src/app/app.ts'
+        {
+          test: /\.ts$/,
+          loader: 'awesome-typescript-loader',
+          exclude: [
+            /\.spec\.ts/
+          ],
+          options: {
+            useCache: true
+          }
         },
-
-        output: {
-            path: path.resolve('dist'),
-            publicPath: '/',
-            filename: '[name].js'
-        },
-
-        module: {
-            rules: [
-                /*
-                * Source map loader support for *.js files
-                * Extracts SourceMaps for source files that as added as sourceMappingURL comment.
-                *
-                * See: https://github.com/webpack/source-map-loader
-                */
-                {
-                    test: /\.js$/,
-                    use: 'source-map-loader',
-                    enforce: 'pre'
-                },
-                {
-                    test: /\.ts$/,
-                    loader: 'awesome-typescript-loader'
-                },
-                {
-                    test: /\.scss$/,
-                    use: ExtractTextPlugin.extract({
-                        fallback: 'style-loader',
-                        use: [
-                            { loader: 'css-loader', options: { importLoaders: 1 } },
-                            'postcss-loader'
-                        ]
-                    })
-                },
-                {
-                    test: /\.(gif|jpe?g|png|svg|tiff|webp)$/,
-                    use: [
-                        {
-                            loader: 'file-loader',
-                            options: {
-                                name: '[name].[ext]',
-                                useRelativePath: true,
-                                publicPath: ''
-                            }
-                        }
-                    ]
-                },
-                {
-                    test: /\.html$/,
-                    use: {
-                        loader: 'html-loader'
+        {
+          test: /\.scss$/,
+          use: [
+            {
+              loader: miniCssExtractPlugin.loader,
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: 'css-loader',
+              options: {
+                sourceMap: true
+              }
+            },
+            {
+              loader: 'postcss-loader',
+              options: {
+                sourceMap: true,
+                plugins: () => [
+                  postcssPresetEnv({
+                    stage: 2,
+                    features: {
+                      'nesting-rules': true,
+                      'color-mod-function': {
+                        unresolved: 'warn'
+                      }
                     }
-                }
-            ]
+                  })
+                ]
+              }
+            }
+          ],
         },
+        {
+          test: /\.html$/,
+          use: {
+            loader: 'html-loader'
+          }
+        },
+        {
+          test: /\.(png|jpg|gif|svg|eot|ttf|woff)$/,
+          loader: 'file-loader',
+          options: {
+            publicPath: '/dist/',
+            limit: -1
+          }
+        }
+      ]
+    },
 
-        plugins: [
-            new webpack.DefinePlugin({
-                'ENV': ENV,
-                'process.env': {
-                    'ENV': ENV,
-                    'NODE_ENV': ENV
-                }
-            }),
-            new webpack.LoaderOptionsPlugin({
-                minimize: isProd,
-                debug: !isProd,
-                options: {
-                    tslint: {
-                        emitErrors: isProd,
-                        failOnHint: isProd,
-                        resourcePath: 'src'
-                    }
-                }
-            }),
-            new StyleLintPlugin(),
-            new CheckerPlugin(),
-            new webpack.optimize.ModuleConcatenationPlugin(),
-            new webpack.optimize.CommonsChunkPlugin(['app', 'vendor']),
-            new ExtractTextPlugin({
-                filename: 'app.css'
-            }),
-            new CopyWebpackPlugin([
-                { from: 'src/*.*', flatten: true },
-                { from: 'src/assets', to: 'assets' },
-            ])
-        ]
-    }
+    plugins: [
+      new styleLintPlugin(),
+      new CheckerPlugin(),
+      new miniCssExtractPlugin({
+        filename: 'app.css',
+      }),
+      new CopyWebpackPlugin([
+          { from: 'src/*.*', flatten: true },
+          { from: 'src/assets', to: 'assets' },
+      ])
+    ],
 
-    if (isProd) {
-        config.plugins.push(
-            new webpack.NoEmitOnErrorsPlugin()
-        );
-    }
+    node: false
+  };
 
-    return config;
+  return config;
 };

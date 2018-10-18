@@ -1,5 +1,4 @@
 import { init as initToolbar, myTimecardPath, copyRows } from './toolbar';
-import * as store from '../shared/store.util';
 
 describe('toolbar', () => {
 
@@ -11,7 +10,6 @@ describe('toolbar', () => {
 
   beforeEach(() => {
     prepareContext();
-    mockStore();
     initToolbar();
   });
 
@@ -20,7 +18,7 @@ describe('toolbar', () => {
     // tslint:disable-next-line:no-require-imports
     const mockFirstRowOnly = require('./mock/toolbar-first.mock.json') as AdpRow[];
     parseDates(mockFirstRowOnly);
-    // tslint:disable-next-line:no-require-imports  
+    // tslint:disable-next-line:no-require-imports
     const mockFilledRows = require('./mock/toolbar-filled.mock.json') as AdpRow[];
     parseDates(mockFilledRows);
 
@@ -33,7 +31,7 @@ describe('toolbar', () => {
 
   it('copyRows - no copy if empty', () => {
 
-    // tslint:disable-next-line:no-require-imports  
+    // tslint:disable-next-line:no-require-imports
     const mockEmptyRows = require('./mock/toolbar-empty.mock.json') as AdpRow[];
     parseDates(mockEmptyRows);
 
@@ -84,26 +82,3 @@ function parseDates(data: AdpRow[]) {
   });
 }
 
-function mockStore() {
-
-  const holder = {};
-
-  spyOn(store, 'setItem').and.callFake((key: string, value: any, callback?: (response: any) => void) => {
-    holder[key] = value;
-    if (callback) {
-      callback(undefined);
-    }
-  });
-
-  spyOn(store, 'getItem').and.callFake((key: string, callback: (response: any) => void) => {
-    callback(holder[key]);
-  });
-
-  spyOn(store, 'removeItem').and.callFake((key: string, callback: (response: any) => void) => {
-    const val = holder[key];
-    delete holder[key];
-    if (callback) {
-      callback(val);
-    }
-  });
-}

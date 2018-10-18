@@ -1,55 +1,42 @@
 import './toolbar.style';
-import {whenElementReady} from '../shared/dom.util';
-import {holidaysUtil} from '../shared/holidays.util';
-import * as store from '../shared/store.util';
+import { whenElementReady } from '../shared/dom.util';
+import { holidaysUtil } from '../shared/holidays.util';
 
 export const myTimecardPath = '#Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
 
-// Wait until element exist!
-export function addToolbar() {
-  if (document.querySelector('#TimecardManager')) {
-    _addToolbar();
-  } else {
-    requestAnimationFrame(addToolbar);
-  }
-}
 
-function _addToolbar() {
+function addToolbar() {
+
+  console.log('Loading ADP-Next...');
+
+  const countryCodeKey = 'adpNext__countryCode';
 
   // tslint:disable-next-line:no-require-imports
   const toolbarHtml = require('./toolbar.tpl') as string;
   document.querySelector('#TimecardManager').insertAdjacentHTML('afterbegin', toolbarHtml);
-  console.log('Loading ADP-Next');
-  console.log('*******************************************************************************************************************');
 
-  const countryCodeKey = 'adp-next__countryCode';
   const toolbar = document.querySelector('.adp-next');
   const country = toolbar.querySelector('.adp-next__country') as HTMLSelectElement;
   const copy = toolbar.querySelector('.adp-next__copy');
 
+  const countryCode = localStorage.getItem(countryCodeKey);
+  if (countryCode) {
+    country.value = countryCode;
+  }
+
+  whenElementReady('TcGrid', () => {
+    country.removeAttribute('disabled');
+    enableActionControls(toolbar, !!country.value);
+  });
+
   country.addEventListener('change', () => {
     const countryCode = country.value;
-    if (countryCode) {
-      store.setItem(countryCodeKey, countryCode);
-    } else {
-      store.removeItem(countryCodeKey);
-    }
+    localStorage.setItem(countryCodeKey, countryCode);
     enableActionControls(toolbar, !!countryCode);
   });
 
   copy.addEventListener('click', evt => {
     copyRows(TcGridTable.DataGrid.store.data, country.value);
-  });
-
-  store.getItem(countryCodeKey, countryCode => {
-    if (countryCode) {
-      country.value = countryCode;
-    }
-  });
-
-  whenElementReady('TcGrid', () => {
-    country.removeAttribute('disabled');
-    enableActionControls(toolbar, !!country.value);
   });
 }
 
@@ -77,9 +64,9 @@ export function copyRows(rows: AdpRow[], countryCode: string) {
 
   holidaysUtil.init(countryCode);
 
-  const {srcIdx, srcRow} = firstFilledResp;
+  const { srcIdx, srcRow } = firstFilledResp;
 
-  // Set status as changed  
+  // Set status as changed
   const clonedRow: AdpRow = {};
 
   // Only clone the needed properties
@@ -139,7 +126,7 @@ export function findFirstFilledRow(rows: AdpRow[]) {
     isFilled = checkIsFilledRow(srcRow);
   } while (!isFilled && srcIdx < rowsLimit);
 
-  return isFilled ? {srcIdx, srcRow} : undefined;
+  return isFilled ? { srcIdx, srcRow } : undefined;
 }
 
 export function checkToolbar() {
@@ -149,7 +136,9 @@ export function checkToolbar() {
 
   if (path === myTimecardPath) {
     if (!toolbar) {
-      addToolbar();
+      whenElementReady('TimecardManager', () => {
+        addToolbar();
+      });
     }
   } else if (toolbar) {
     toolbar.parentNode.removeChild(toolbar);
