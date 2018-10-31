@@ -1,6 +1,6 @@
 {
   "name": "adp-next",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "ADP Next",
   "main": "src/content-script.js",
   "scripts": {

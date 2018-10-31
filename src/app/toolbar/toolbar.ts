@@ -2,7 +2,7 @@ import './toolbar.style';
 import { whenElementReady } from '../shared/dom.util';
 import { holidaysUtil } from '../shared/holidays.util';
 
-export const myTimecardPath = '#Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
+export const myTimecardPath = 'Myself_ttd_MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard/MyselfTabTimecardsAttendanceSchCategoryTLMWebMyTimecard';
 
 
 function addToolbar() {
@@ -134,7 +134,7 @@ export function checkToolbar() {
   const path = location.hash;
   const toolbar = document.querySelector('.adp-next');
 
-  if (path === myTimecardPath) {
+  if (path.includes(myTimecardPath)) {
     if (!toolbar) {
       whenElementReady('TimecardManager', () => {
         addToolbar();
